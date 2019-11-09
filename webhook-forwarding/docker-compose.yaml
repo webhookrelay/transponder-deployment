@@ -5,7 +5,7 @@ volumes:
 services:
   transponder:
     container_name: transponder
-    image: webhookrelay/transponder:0.3.0
+    image: webhookrelay/transponder:0.4.0
     command:
       - /bin/transponder
       - --status-server
@@ -15,11 +15,13 @@ services:
         source: ./certs
         target: /certs
     ports:
-      - 9300:9300
-      - 9800:9800
-      - 9801:9801
-      - 9802:9802
-      - 9803:9803
+      - 9300:9300 # API HTTPS port
+      - 9301:9301 # API HTTP port
+      - 9302:9302 # GRPC port
+      - 9800:9800 # Tunnel API port
+      - 9801:9801 # Tunnel HTTP port
+      - 9802:9802 # Tunnel HTTPS port
+      - 9803:9803 # Status port
     healthcheck:
       test: curl --fail --insecure -s https://127.0.0.1:9803/health || exit 1
       interval: 10s
@@ -34,25 +36,30 @@ services:
       - ADMIN_API_SECRET=${ADMIN_API_SECRET}
       # Licensing
       - LICENSE=${LICENSE}
-      # Connectivity
+      # Tunnelling
       - TUNNEL_API_PORT=9800
       - TUNNEL_HTTP_PORT=9801
       - TUNNEL_HTTPS_PORT=9802
       - MY_ADDRESS=${MY_ADDRESS}     
-      # TLS
+      # Let's Encrypt provided certificates
+      - MANAGED_DOMAINS=${MANAGED_DOMAINS}
+      - CLOUDFLARE_EMAIL=${CLOUDFLARE_EMAIL}
+      - CLOUDFLARE_API_KEY=${CLOUDFLARE_API_KEY}
+      # Self-signed certs 
       - CERT_PATH=${CERT_PATH}
       - CERT_KEY_PATH=${CERT_KEY_PATH}
       # Misc
       - STATUS_PORT=9803
       - STATUS_USERNAME=${STATUS_USERNAME}
       - STATUS_PASSWORD=${STATUS_PASSWORD}
+      # Database
       - POSTGRES_HOST=psql
       - POSTGRES_USER=pguser
       - POSTGRES_PASSWORD=pgpass
       - POSTGRES_DB=pgdb-transponder
   psql:
     image: postgres:11
-    container_name: postgres
+    container_name: transponder-postgres
     restart: always
     volumes:
       - "psql-data:/var/lib/postgresql/data"
