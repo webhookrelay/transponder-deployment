@@ -49,6 +49,7 @@ services:
       - CERT_PATH=${CERT_PATH}
       - CERT_KEY_PATH=${CERT_KEY_PATH}
       # Misc
+      - FRONTEND_URL=http://ui:8080
       - STATUS_PORT=9803
       - STATUS_USERNAME=${STATUS_USERNAME}
       - STATUS_PASSWORD=${STATUS_PASSWORD}
@@ -57,6 +58,10 @@ services:
       - POSTGRES_USER=pguser
       - POSTGRES_PASSWORD=pgpass
       - POSTGRES_DB=pgdb-transponder
+  ui:
+    image: webhookrelay/transponder-ui:latest
+    container_name: transponder-ui
+    restart: always
   psql:
     image: postgres:11
     container_name: transponder-postgres
