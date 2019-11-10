@@ -5,7 +5,7 @@ volumes:
 services:
   transponder:
     container_name: transponder
-    image: webhookrelay/transponder:0.4.1
+    image: webhookrelay/transponder:0.4.2
     command:
       - /bin/transponder
       - --status-server
