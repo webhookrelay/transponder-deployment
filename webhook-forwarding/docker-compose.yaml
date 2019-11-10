@@ -15,8 +15,8 @@ services:
         source: ./certs
         target: /certs
     ports:
-      - ${HTTP_API_PORT}:9300 # API HTTPS port
-      - ${HTTPS_API_PORT}:9301 # API HTTP port
+      - ${HTTPS_API_PORT}:9300 # API HTTPS port
+      - ${HTTP_API_PORT}:9301 # API HTTP port
       - 9302:9302 # GRPC port
       - 9800:9800 # Tunnel API port
       - 9801:9801 # Tunnel HTTP port
