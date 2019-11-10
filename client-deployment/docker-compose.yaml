@@ -1,0 +1,24 @@
+version: '3.2'
+
+services:
+  relay:
+    container_name: relay-client
+    image: webhookrelay/webhookrelayd:latest
+    network_mode: host
+    # Choose either tunnelling or forwarding
+    # command:
+    #   - --mode 
+    #   - tunnel
+    restart: always
+    environment:
+      # HTTP API for bucket, input, output & tunnel management
+      - RELAY_API_ADDRESS=${RELAY_API_ADDRESS}
+      # Webhook forwarding API
+      - RELAY_GRPC_API_ADDRESS=${RELAY_GRPC_API_ADDRESS}
+      # Tunnelling API address
+      - RELAY_TUNNEL_API_ADDRESS=${RELAY_TUNNEL_API_ADDRESS}
+      # Authentication
+      - RELAY_KEY=${RELAY_KEY}
+      - RELAY_SECRET=${RELAY_SECRET}
+      # Optional tunnels if 'tunnel' mode is used
+      - TUNNELS=${TUNNELS}
