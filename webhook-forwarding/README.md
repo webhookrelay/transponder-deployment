@@ -17,7 +17,11 @@ Set this environment variable:
 MANAGED_DOMAINS=your-domain.com
 ```
 
-It is recommended to use DNS challenge. Transponder supports Cloudflare as a DNS challenge provider. To use it instead of an HTTP challenge, set these additional variables:
+By default, Transponder will try to retrieve certificates using TLS-ALPN challenge. Your server must therefore be reachable from the Internet.
+
+##### Using DNS challenge 
+
+It is recommended to use DNS challenge. Transponder supports Cloudflare as a DNS challenge provider. To use it instead of the TLS-ALPN challenge, set these additional variables:
 
 ```
 CLOUDFLARE_EMAIL=your-cloudflare-account-email
@@ -25,6 +29,8 @@ CLOUDFLARE_API_KEY=your-cloudflare-api-key
 ```
 
 This will ensure that during boot, Transponder will retrieve certificates for your server.
+
+> For production instance, set CA_URL=https://acme-v02.api.letsencrypt.org/directory in your .env file
 
 
 #### Self-signed certificates

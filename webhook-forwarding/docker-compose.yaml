@@ -15,8 +15,8 @@ services:
         source: ./certs
         target: /certs
     ports:
-      - ${HTTPS_API_PORT}:9300 # API HTTPS port
-      - ${HTTP_API_PORT}:9301 # API HTTP port
+      - ${HTTPS_API_PORT}:${HTTPS_API_PORT} # API HTTPS port
+      - ${HTTP_API_PORT}:${HTTP_API_PORT} # API HTTP port
       - 9302:9302 # GRPC port
       - 9800:9800 # Tunnel API port
       - 9801:9801 # Tunnel HTTP port
@@ -42,13 +42,17 @@ services:
       - TUNNEL_HTTPS_PORT=9802
       - MY_ADDRESS=${MY_ADDRESS}     
       # Let's Encrypt provided certificates
+      - XDG_DATA_HOME=/certs # if used with Let's Encrypt, it needs a persistent path for certs
       - MANAGED_DOMAINS=${MANAGED_DOMAINS}
+      - CA_URL=${CA_URL}
       - CLOUDFLARE_EMAIL=${CLOUDFLARE_EMAIL}
       - CLOUDFLARE_API_KEY=${CLOUDFLARE_API_KEY}
       # Self-signed certs 
       - CERT_PATH=${CERT_PATH}
       - CERT_KEY_PATH=${CERT_KEY_PATH}
       # Misc
+      - HTTPS_API_PORT=${HTTPS_API_PORT}
+      - HTTP_API_PORT=${HTTP_API_PORT}
       - FRONTEND_URL=http://ui:8080
       - STATUS_PORT=9803
       - STATUS_USERNAME=${STATUS_USERNAME}
@@ -68,8 +72,8 @@ services:
     restart: always
     volumes:
       - "psql-data:/var/lib/postgresql/data"
-    ports:
-      - "5432:5432"
+    # ports:
+    # - "5432:5432"
     environment:
       - POSTGRES_USER=pguser
       - POSTGRES_PASSWORD=pgpass
