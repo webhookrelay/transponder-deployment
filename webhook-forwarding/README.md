@@ -7,6 +7,20 @@
 1. Create a new file `.env`
 2. Copy & paste contents of `.env.example` file to `.env` and change the details such as admin username, password API key (key has to remain UUID format) and secret.
 
+### No TLS (when your own firewall/load balancer does termination)
+
+If you don't need TLS in Transponder:
+
+- Ensure that environment variables `CERT_PATH`, `CERT_KEY_PATH` and `MANAGED_DOMAINS` aren't set. Either remove them from the `.env` file or edit the `docker-compose.yaml` to unset them.
+- Update `healthcheck` section in the docker-compose.yaml to use http:// instead of https://
+- Set `RELAY_REQUIRE_TLS=false` in the agent to disable TLS for GRPC connections. 
+
+Alternatively, if you do need encryption for the agent and you are doing TLS termination in front of the Transponder, you can use `--ws` flag when running forward command:
+
+```bash
+relay forward --ws -b my-bucket https://bin.webhookrelay.com/v1/webhooks/d1ea0a51-f317-4e8d-a641-067e96a46bc3 
+```
+
 ### TLS Configuration
 
 For TLS configuration you can choose between self-signed certificates and the ones provided by [Let's Encrypt](https://letsencrypt.org/). 
