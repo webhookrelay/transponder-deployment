@@ -1,0 +1,90 @@
+version: '3.2'
+volumes:
+  psql-data:
+
+services:
+  public-endpoint:
+    container_name: public-endpoint
+    image: nginx
+    ports:
+      - 9999:9999  # public port
+    volumes:
+      - type: bind # nginx configuration
+        source: ./nginx/nginx.conf
+        target: /etc/nginx/nginx.conf 
+  transponder:
+    container_name: transponder
+    image: webhookrelay/transponder:0.4.2
+    command:
+      - /bin/transponder
+      - --status-server
+      - --api-server
+    volumes:
+      - type: bind # self-signed certs
+        source: ./certs
+        target: /certs
+    ports:
+      - ${HTTPS_API_PORT}:${HTTPS_API_PORT} # API HTTPS port
+      - ${HTTP_API_PORT}:${HTTP_API_PORT} # API HTTP port
+      - 9302:9302 # GRPC port
+      - 9800:9800 # Tunnel API port
+      - 9801:9801 # Tunnel HTTP port
+      - 9802:9802 # Tunnel HTTPS port
+      - 9803:9803 # Status port
+    healthcheck:
+      test: curl --fail --insecure -s https://127.0.0.1:9803/health || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: always  
+    environment:
+      # Authentication
+      - ADMIN_USERNAME=${ADMIN_USERNAME}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - ADMIN_API_KEY=${ADMIN_API_KEY}
+      - ADMIN_API_SECRET=${ADMIN_API_SECRET}
+      # Licensing
+      - LICENSE=${LICENSE}
+      # Tunnelling
+      - TUNNEL_API_PORT=9800
+      - TUNNEL_HTTP_PORT=9801
+      - TUNNEL_HTTPS_PORT=9802
+      - MY_ADDRESS=${MY_ADDRESS}     
+      # Let's Encrypt provided certificates
+      - XDG_DATA_HOME=/certs # if used with Let's Encrypt, it needs a persistent path for certs
+      - MANAGED_DOMAINS=${MANAGED_DOMAINS}
+      - CA_URL=${CA_URL}
+      - CLOUDFLARE_EMAIL=${CLOUDFLARE_EMAIL}
+      - CLOUDFLARE_API_KEY=${CLOUDFLARE_API_KEY}
+      # Self-signed certs 
+      - CERT_PATH=${CERT_PATH}
+      - CERT_KEY_PATH=${CERT_KEY_PATH}
+      # Misc
+      - HTTPS_API_PORT=${HTTPS_API_PORT}
+      - HTTP_API_PORT=${HTTP_API_PORT}
+      - FRONTEND_URL=http://ui:8080
+      - STATUS_PORT=9803
+      - STATUS_USERNAME=${STATUS_USERNAME}
+      - STATUS_PASSWORD=${STATUS_PASSWORD}
+      # Database
+      - POSTGRES_HOST=psql
+      - POSTGRES_USER=pguser
+      - POSTGRES_PASSWORD=pgpass
+      - POSTGRES_DB=pgdb-transponder
+  ui:
+    image: webhookrelay/transponder-ui:latest
+    container_name: transponder-ui
+    restart: always
+  psql:
+    image: postgres:11
+    container_name: transponder-postgres
+    restart: always
+    volumes:
+      - "psql-data:/var/lib/postgresql/data"
+    # ports:
+    # - "5432:5432"
+    environment:
+      - POSTGRES_USER=pguser
+      - POSTGRES_PASSWORD=pgpass
+      - POSTGRES_DB=pgdb-transponder
+      - PGDATA=/var/lib/postgresql/data/pgdata
