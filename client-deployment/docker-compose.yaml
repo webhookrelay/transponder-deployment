@@ -11,6 +11,8 @@ services:
     #   - tunnel
     restart: always
     environment:
+      # !! Uncomment the line below if your server doesn't have TLS certificates 
+      # RELAY_REQUIRE_TLS=false
       # HTTP API for bucket, input, output & tunnel management
       - RELAY_API_ADDRESS=${RELAY_API_ADDRESS}
       # Webhook forwarding API
@@ -22,3 +24,5 @@ services:
       - RELAY_SECRET=${RELAY_SECRET}
       # Optional tunnels if 'tunnel' mode is used
       - TUNNELS=${TUNNELS}
+      # Optional buckets list to subscribe
+      - BUCKETS=${BUCKETS}
