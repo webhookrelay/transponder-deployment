@@ -66,6 +66,11 @@ services:
       - STATUS_PORT=9803
       - STATUS_USERNAME=${STATUS_USERNAME}
       - STATUS_PASSWORD=${STATUS_PASSWORD}
+      # Public URL changes the admin dashboard base URL to the 
+      # specified one. If you set this to https://example.com:9999
+      # then available webhook endpoint URLs will be displayed
+      # as: https://example.com:9999/v1/webhooks/29442883-68cd-4acb-b3b5-467de5ddd68
+      - PUBLIC_URL=${PUBLIC_URL}
       # Database
       - POSTGRES_HOST=psql
       - POSTGRES_USER=pguser
