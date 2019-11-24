@@ -1,0 +1,81 @@
+version: '3.2'
+volumes:
+  psql-data:
+
+services:
+  transponder:
+    container_name: transponder
+    image: webhookrelay/transponder:0.4.2
+    command:
+      - /bin/transponder
+      - --status-server
+      - --api-server
+    volumes:
+      - type: bind # self-signed certs
+        source: ./certs
+        target: /certs
+    ports:
+      - ${HTTPS_API_PORT}:${HTTPS_API_PORT} # API HTTPS port, default 9301
+      - ${HTTP_API_PORT}:${HTTP_API_PORT} # API HTTP port, default 9302
+      - 9300:9300 # GRPC port
+      - 9800:9800 # Tunnel API port
+      - 80:9801 # Tunnel HTTP port
+      - 443:9802 # Tunnel HTTPS port
+      - 9803:9803 # Status port
+    healthcheck:
+      test: curl --fail --insecure -s https://127.0.0.1:9803/health || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: always  
+    environment:
+      # Authentication
+      - ADMIN_USERNAME=${ADMIN_USERNAME}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - ADMIN_API_KEY=${ADMIN_API_KEY}
+      - ADMIN_API_SECRET=${ADMIN_API_SECRET}
+      # Cloudflare
+      - XDG_DATA_HOME=/certs # if used with Let's Encrypt, it needs a persistent path for certs
+      - CA_URL=https://acme-v02.api.letsencrypt.org/directory
+      - MANAGED_DOMAINS=${MANAGED_DOMAINS} # domains, such as *.transponder.synpse.net
+      - CLOUDFLARE_API_KEY=${CLOUDFLARE_API_KEY}
+      - CLOUDFLARE_EMAIL=${CLOUDFLARE_EMAIL}
+      # Licensing
+      - LICENSE=${LICENSE}
+      # TUNNEL_API_HOSTNAME ensures that the clients can connect
+      # using the same port as the incoming HTTPS traffic (usually 443) 
+      - TUNNEL_API_HOSTNAME=${TUNNEL_API_HOSTNAME}      
+      # Connectivity      
+      - TUNNEL_API_PORT=9800
+      - TUNNEL_HTTP_PORT=9801
+      - TUNNEL_HTTPS_PORT=9802
+      - MY_ADDRESS=${MY_ADDRESS}
+      # HTTP API & Admin dashboard
+      - HTTPS_API_PORT=${HTTPS_API_PORT}
+      - HTTP_API_PORT=${HTTP_API_PORT}
+      # Misc
+      - FRONTEND_URL=http://ui:8080
+      - STATUS_PORT=9803
+      - STATUS_USERNAME=${STATUS_USERNAME}
+      - STATUS_PASSWORD=${STATUS_PASSWORD}
+      - POSTGRES_HOST=psql
+      - POSTGRES_USER=pguser
+      - POSTGRES_PASSWORD=pgpass
+      - POSTGRES_DB=pgdb-transponder
+  ui:
+    image: webhookrelay/transponder-ui:latest
+    container_name: transponder-ui
+    restart: always
+  psql:
+    image: postgres:11
+    container_name: postgres
+    restart: always
+    volumes:
+      - "psql-data:/var/lib/postgresql/data"
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=pguser
+      - POSTGRES_PASSWORD=pgpass
+      - POSTGRES_DB=pgdb-transponder
+      - PGDATA=/var/lib/postgresql/data/pgdata
