@@ -11,9 +11,9 @@ services:
       - --status-server
       - --api-server
     volumes:
-      - type: bind # self-signed certs
-        source: ./certs
-        target: /certs
+      - type: bind # self-signed certs and accelerator database
+        source: ./data
+        target: /data
     ports:
       - ${HTTPS_API_PORT}:${HTTPS_API_PORT} # API HTTPS port, default 9301
       - ${HTTP_API_PORT}:${HTTP_API_PORT} # API HTTP port, default 9302
@@ -34,9 +34,15 @@ services:
       - ADMIN_PASSWORD=${ADMIN_PASSWORD}
       - ADMIN_API_KEY=${ADMIN_API_KEY}
       - ADMIN_API_SECRET=${ADMIN_API_SECRET}
-      # Cloudflare
-      - XDG_DATA_HOME=/certs # if used with Let's Encrypt, it needs a persistent path for certs
+      # Application settings
+      - XDG_DATA_HOME=/data
+      - LOGS_RETENTION_DAYS=${LOGS_RETENTION_DAYS}
+      - LOGS_RETENTION_JOB_SCHEDULE=${LOGS_RETENTION_JOB_SCHEDULE}
+      - ACCELERATOR_ENABLED=true
+      - ACCELERATOR_BATCH_SIZE=500 # max size
+      # HTTPS with Cloudflare      
       - CA_URL=https://acme-v02.api.letsencrypt.org/directory
+      - CA_EMAIL=your-email@example.com
       - MANAGED_DOMAINS=${MANAGED_DOMAINS} # domains, such as *.transponder.synpse.net
       - CLOUDFLARE_API_KEY=${CLOUDFLARE_API_KEY}
       - CLOUDFLARE_EMAIL=${CLOUDFLARE_EMAIL}
@@ -62,10 +68,6 @@ services:
       - POSTGRES_USER=pguser
       - POSTGRES_PASSWORD=pgpass
       - POSTGRES_DB=pgdb-transponder
-  ui:
-    image: webhookrelay/transponder-ui:latest
-    container_name: transponder-ui
-    restart: always
   psql:
     image: postgres:11
     container_name: postgres

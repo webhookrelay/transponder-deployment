@@ -6,9 +6,9 @@ services:
     image: webhookrelay/webhookrelayd:latest
     network_mode: host
     # Choose either tunnelling or forwarding
-    # command:
-    #   - --mode 
-    #   - tunnel
+    command:
+      - --mode 
+      - tunnel
     restart: always
     environment:
       # !! Uncomment the line below if your server doesn't have TLS certificates 
@@ -26,3 +26,4 @@ services:
       - TUNNELS=${TUNNELS}
       # Optional buckets list to subscribe
       - BUCKETS=${BUCKETS}
+      - RELAY_INSECURE=${RELAY_INSECURE}

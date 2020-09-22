@@ -14,15 +14,15 @@ services:
         target: /etc/nginx/nginx.conf 
   transponder:
     container_name: transponder
-    image: webhookrelay/transponder:0.4.2
+    image: webhookrelay/transponder:0.7.0
     command:
       - /bin/transponder
       - --status-server
       - --api-server
     volumes:
-      - type: bind # self-signed certs
-        source: ./certs
-        target: /certs
+      - type: bind # self-signed certs and accelerator data
+        source: ./data
+        target: /data
     ports:
       - ${HTTPS_API_PORT}:${HTTPS_API_PORT} # API HTTPS port
       - ${HTTP_API_PORT}:${HTTP_API_PORT} # API HTTP port
@@ -50,8 +50,7 @@ services:
       - TUNNEL_HTTP_PORT=9801
       - TUNNEL_HTTPS_PORT=9802
       - MY_ADDRESS=${MY_ADDRESS}     
-      # Let's Encrypt provided certificates
-      - XDG_DATA_HOME=/certs # if used with Let's Encrypt, it needs a persistent path for certs
+      # Let's Encrypt provided certificates      
       - MANAGED_DOMAINS=${MANAGED_DOMAINS}
       - CA_URL=${CA_URL}
       - CLOUDFLARE_EMAIL=${CLOUDFLARE_EMAIL}
@@ -62,7 +61,6 @@ services:
       # Misc
       - HTTPS_API_PORT=${HTTPS_API_PORT}
       - HTTP_API_PORT=${HTTP_API_PORT}
-      - FRONTEND_URL=http://ui:8080
       - STATUS_PORT=9803
       - STATUS_USERNAME=${STATUS_USERNAME}
       - STATUS_PASSWORD=${STATUS_PASSWORD}
@@ -71,15 +69,16 @@ services:
       # then available webhook endpoint URLs will be displayed
       # as: https://example.com:9999/v1/webhooks/29442883-68cd-4acb-b3b5-467de5ddd68
       - PUBLIC_URL=${PUBLIC_URL}
+      - LOGS_RETENTION_DAYS=${LOGS_RETENTION_DAYS}
+      - LOGS_RETENTION_JOB_SCHEDULE=${LOGS_RETENTION_JOB_SCHEDULE}
+      - ACCELERATOR_ENABLED=true
+      - ACCELERATOR_BATCH_SIZE=500 # max size
+      - XDG_DATA_HOME=/data
       # Database
       - POSTGRES_HOST=psql
       - POSTGRES_USER=pguser
       - POSTGRES_PASSWORD=pgpass
       - POSTGRES_DB=pgdb-transponder
-  ui:
-    image: webhookrelay/transponder-ui:latest
-    container_name: transponder-ui
-    restart: always
   psql:
     image: postgres:11
     container_name: transponder-postgres

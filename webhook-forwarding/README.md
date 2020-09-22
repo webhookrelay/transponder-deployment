@@ -37,7 +37,7 @@ MANAGED_DOMAINS=your-domain.com
 
 Your server must be reachable from the Internet (by Let's Encrypt server).
 
-##### Using DNS challenge 
+##### Using DNS challenge
 
 It is recommended to use DNS challenge when you need a wildcard cert **or** your server is not reachable from the public Internet. Transponder supports Cloudflare as a DNS challenge provider. To use it instead of the TLS-ALPN challenge, set these additional variables:
 
@@ -50,11 +50,11 @@ This will ensure that during boot, Transponder will retrieve certificates for yo
 
 #### Self-signed certificates
 
-Get your certificates and place them into `certs/` directory next to this docker-compose.yaml file. Then, set these environment variables in the `.env` file:
+Get your certificates and place them into `data/` directory next to this docker-compose.yaml file. Then, set these environment variables in the `.env` file:
 
 ```
-CERT_PATH=./certs/your-domain.pem
-CERT_KEY_PATH=./certs/your-domain-key.pem
+CERT_PATH=./data/your-domain.pem
+CERT_KEY_PATH=./data/your-domain-key.pem
 ```
 
 ## Starting the server
