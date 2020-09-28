@@ -14,7 +14,7 @@ services:
         target: /etc/nginx/nginx.conf 
   transponder:
     container_name: transponder
-    image: webhookrelay/transponder:0.7.0
+    image: webhookrelay/transponder:0.7
     command:
       - /bin/transponder
       - --status-server
