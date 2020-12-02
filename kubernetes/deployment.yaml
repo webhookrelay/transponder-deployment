@@ -1,0 +1,90 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: transponder
+  namespace: transponder
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: transponder
+  template:
+    metadata:
+      labels:
+        app: transponder
+    spec:
+      containers:
+        - name: transponder
+          image: webhookrelay/transponder:latest
+          imagePullPolicy: Always
+          command: ["/bin/transponder", 
+          "--status-server",
+          "--api-server"]
+          env:
+            # Initial admin authentication (CREATE SECRETS)
+            - name: ADMIN_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: admin-credentials
+                  key: username
+            - name: ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: admin-credentials
+                  key: password
+            # generate a JWT secret, for example use: 'openssl rand -base64 32'
+            - name: JWT_SECRET
+              value: 9o917D4KfluOs68JgkWYIDOBrS/HL6eDWag3kx+/lNM=
+            - name: LICENSE
+              valueFrom:
+                secretKeyRef:
+                  name: license
+                  key: license
+            # Configuration
+            - name: LOGS_RETENTION_DAYS
+              value: "30"
+            - name: LOGS_RETENTION_JOB_SCHEDULE
+              value: "@midnight"
+            # HTTPS configuration (EDIT TO YOUR SETTINGS)
+            - name: MANAGED_DOMAINS
+              value: "*.example.com"
+            - name: CA_EMAIL
+              value: "youremail.example.com"
+            - name: CA_URL
+              value: "https://acme-v02.api.letsencrypt.org/directory"
+            # If you are using Cloudflare, set details for wildcard domains
+            # - name: CLOUDFLARE_EMAIL
+            #   value: ""
+            # - name: CLOUDFLARE_API_KEY
+            #   value: ""
+            
+            # Database configuration (EDIT TO YOUR SETTINGS)
+            - name: POSTGRES_HOST
+              value: ""
+            - name: POSTGRES_USER
+              value: ""
+            - name: POSTGRES_PASSWORD
+              value: ""
+            - name: POSTGRES_DB
+              value: ""
+            # Redis is used for caching and pubsub
+            - name: REDIS_HOST
+              value: redis:6379
+          ports:
+            - containerPort: 9300 # API/Dashboard HTTPS port
+            - containerPort: 9301 # HTTP port 
+            - containerPort: 9302 # GRPC port
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 9301
+            initialDelaySeconds: 30
+            timeoutSeconds: 10
+            periodSeconds: 3
+          resources:
+            limits:
+              cpu: 400m
+              memory: 500Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi

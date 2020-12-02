@@ -1,0 +1,108 @@
+apiVersion: v1
+kind: List
+items:
+- apiVersion: v1
+  kind: Service
+  metadata:
+    namespace: transponder
+    labels:
+      name: redis
+    name: redis
+  spec:
+    ports:
+    - name: tcp
+      port: 6379
+      protocol: TCP
+      targetPort: 6379
+    selector:
+      app: redis
+    sessionAffinity: None
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+  namespace: transponder
+  labels:
+      name: "redis"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      name: redis
+      labels:
+        app: redis
+        tier: backend
+    spec:
+      # Provision a fresh volume for the pod
+      # [START volumes]
+      volumes:
+        - name: redis-data
+          persistentVolumeClaim:
+            claimName: redis-disk-pvc
+      # [END volumes]
+      containers:
+        - image: redis:5-alpine
+          resources:
+            limits:
+              cpu: "150m"
+              memory: 512Mi
+            requests:
+              cpu: 50m
+              memory: 128Mi
+          imagePullPolicy: Always
+          name: redis
+          livenessProbe:
+            exec:
+              command:
+              - redis-cli
+              - ping
+            initialDelaySeconds: 30
+            timeoutSeconds: 5
+          readinessProbe:
+            exec:
+              command:
+              - redis-cli
+              - ping
+            initialDelaySeconds: 5
+            timeoutSeconds: 1
+          ports:
+           - containerPort: 6379
+          # Mount the volume into the pod
+          volumeMounts:
+          - mountPath: /data
+            name: redis-data
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: redis-disk-pv
+spec:
+  storageClassName: "redis-pvc-storageclass"
+  capacity:
+    storage: 10G
+  accessModes:
+    - ReadWriteOnce
+  claimRef:
+    namespace: apollo
+    name: prod-redis-disk-pvc
+  gcePersistentDisk:
+    pdName: prod-redis-disk
+    fsType: ext4
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: redis-disk-pvc
+  namespace: transponder
+spec:
+  storageClassName: "redis-pvc-storageclass"
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10G
