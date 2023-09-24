@@ -17,9 +17,10 @@ spec:
         - name: transponder
           image: webhookrelay/transponder:latest
           imagePullPolicy: Always
-          command: ["/bin/transponder", 
-          "--status-server",
-          "--api-server"]
+          command: [
+            "/bin/transponder", 
+            "--status-server",
+            "--api-server"]
           env:
             # Initial admin authentication (CREATE SECRETS)
             - name: ADMIN_USERNAME
