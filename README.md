@@ -12,7 +12,7 @@
     <a href="https://webhookrelay.com">Website</a> •
     <a href="https://webhookrelay.com/v1/examples/">Examples</a> •
     <a href="https://webhookrelay.com/v1/tutorials/">Tutorials</a> •
-    <a href="https://webhookrelay.com/v1/installation/">Install</a> •s   
+    <a href="https://webhookrelay.com/v1/installation/">Install</a> •  
     <a href="https://my.webhookrelay.com/">Portal</a>  
   </p>
 
