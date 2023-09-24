@@ -1,0 +1,39 @@
+version: '3.2'
+volumes:
+  psql-data:
+
+services:
+  transponder:
+    container_name: transponder
+    image: webhookrelay/transponder:latest
+    command:
+      - /bin/transponder
+      - --status-server
+      - --api-server
+    volumes:
+      - type: bind # certs, data
+        source: ./data
+        target: /data
+    ports:
+      - ${HTTPS_API_PORT}:${HTTPS_API_PORT} # API HTTPS port
+      - ${HTTP_API_PORT}:${HTTP_API_PORT} # API HTTP port
+      - 9302:9302 # GRPC port
+      - 9800:9800 # Tunnel API port
+      - 9801:9801 # Tunnel HTTP port
+      - 9802:9802 # Tunnel HTTPS port
+      - 9803:9803 # Status port
+    healthcheck:
+      test: curl --fail --insecure -s https://127.0.0.1:9803/health || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: always
+    env_file:
+      - .env
+    environment:     
+      # Tunnelling
+      - TUNNEL_API_PORT=9800
+      - TUNNEL_HTTP_PORT=9801
+      - TUNNEL_HTTPS_PORT=9802
+      - MY_ADDRESS=${MY_ADDRESS}
+      - STATUS_PORT=9803
