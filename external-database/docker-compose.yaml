@@ -1,6 +1,4 @@
 version: '3.2'
-volumes:
-  psql-data:
 
 services:
   transponder:
