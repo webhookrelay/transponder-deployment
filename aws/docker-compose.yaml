@@ -1,9 +1,8 @@
 version: '3.2'
-
 services:
   transponder:
     container_name: transponder
-    image: webhookrelay/transponder:latest
+    image: webhookrelay/transponder:0.8.3
     command:
       - /bin/transponder
       - --status-server
@@ -22,13 +21,14 @@ services:
       - 9800:9800 # Tunnel API port
       - 9801:9801 # Tunnel HTTP port
       - 9802:9802 # Tunnel HTTPS port
+      - 9803:9803 # Status port
     restart: always
     env_file:
       - .env
-    environment:     
+    environment:
+      # Certificate storage
+      - XDG_DATA_HOME=/data
       # Tunnelling
       - TUNNEL_API_PORT=9800
       - TUNNEL_HTTP_PORT=9801
       - TUNNEL_HTTPS_PORT=9802
-      - MY_ADDRESS=${MY_ADDRESS}
-
