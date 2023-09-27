@@ -28,6 +28,8 @@ Go to the AWS console https://console.aws.amazon.com/ec2/home?region=us-west-2#L
 For tunnels to work we will need to allow several more ports to connect to the EC2 instance:
 
 - 9800 for the agent to establish a TCP
+- 9801 for HTTP tunnels (user facing)
+- 9802 for HTTPS tunnels (user facing)
 
 ## Database
 
